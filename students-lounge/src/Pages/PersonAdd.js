@@ -1,5 +1,6 @@
 import { addDoc, collection } from 'firebase/firestore/lite';
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import {useNavigate} from "react-router-dom";
 
 export default function PersonAdd(props) {
 
@@ -12,9 +13,17 @@ export default function PersonAdd(props) {
     teacher: '',
   })
 
+  //const navigate = useNavigate();
+
   const handleSubmit = async () => {
-    const citySnapshot = await addDoc(collection(firestore, 'users'), user);
+    const result = await addDoc(collection(firestore, 'users'), user);
+    window.alert('✅ Very well, you have successfully registered!')
   }
+
+  const navigate = useNavigate();
+  const handleBackClick = () => {
+    navigate('/', {replace: true});
+  };
 
   return (
     <div>
@@ -54,26 +63,9 @@ export default function PersonAdd(props) {
         </label>
         <br></br>
         <button id='btn' onClick={handleSubmit} type="submit">Add</button>
+        <br></br>
+        <button onClick={handleBackClick}>Back</button>
       </form>
     </div>
   )
 }
-/*import React from 'react';
-
-
-export default class PersonAdd extends React.Component {
-  state = {
-    
-  }
-
-  handleChange = event => {
-    this.setState({ first_name: event.target.value });
-    this.setState({ last_name: event.target.value });
-    this.setState({ email: event.target.value });
-    this.setState({ password: event.target.value });
-    this.setState({ student: event.target.value });
-    this.setState({ teacher: event.target.value });
-  }
-
-}
-*/
