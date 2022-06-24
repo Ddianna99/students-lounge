@@ -13,16 +13,29 @@ export default function Exam(props) {
 
   const [anotherItems, setAnotherItems] = useState([])
 
-  const [questions, setQuestions] = useState({
-    questions:[{
-        hint:'',
-        question:'',
-        time:''
-    }]})
+  // const [questions, setQuestions] = useState({
+  //   questions:[{
+  //       hint:'',
+  //       question:'',
+  //       time:''
+  //   }]})
+
+
+
+
+  const[exam, setExam] = useState()
 
   const [questionNumber, setQuestionNumber] = useState(0)
   const [resultId, setResultId] = useState()
   const [loading, setLoading] = useState(true)
+
+  const[result, setResult] = useState({
+    answer:'',
+    date:'',
+    question: '',
+    student:'',
+    startDate: ''
+  })
 
 
   const [answer, setAnswer] = useState({
@@ -42,13 +55,17 @@ export default function Exam(props) {
 
   const handleSubmit = async () => {
     console.log(answer.emotions)
-    answer.question= questions[questionNumber].id
+    //answer.question= exam[questionNumber].id
+    answer.question = exam.questions[questionNumber].question
+    answer.time = exam.questions[questionNumber].time
     const result = await addDoc(collection(firestore, 'answer'),answer)
     .then(docRef => {
-      updateDoc(collection(firestore, 'result'),{
-        answers: arrayUnion(docRef.id)})
-        .then(succes =>{
-        });
+      addDoc(collection(firestore, 'result'),{
+        answer: docRef.id,
+        student : localStorage.getItem("loggedEmail"),
+        teacher : exam.teacher,
+        subject : exam.subject})
+
         setQuestionNumber(prevstate => prevstate + 1)
         
     });
@@ -56,50 +73,43 @@ export default function Exam(props) {
 
   useEffect(() => {
     const current = new Date();
-    const startDate = `${current.getDate()}/${current.getMonth()+1}/${current.getFullYear()} ${current.getHours()}:${current.getMinutes()}`;
-    //addDoc aduce tarziu result
-    addDoc(collection(firestore, 'results'), {
-      date:startDate,
-      //answer: answer[questionNumber],
-      //question:questions[questionNumber]
-    })
-    .then(docRef => {
-      setResultId(docRef.id)
-      time.setSeconds(time.getSeconds() + 2); 
-    });
-
-    const anotherItems = JSON.parse(localStorage.getItem('loggedSubject'));
-    if (anotherItems) {
-        setAnotherItems(anotherItems);
-    }
-    console.log("anotherItem: " + anotherItems)
+    setResult(prevState => ({...prevState, startDate: `${current.getDate()}/${current.getMonth()+1}/${current.getFullYear()} ${current.getHours()}:${current.getMinutes()}`}));
 
     getDocs(collection(firestore, 'tests')).then(response => {
-      let tempQuestions = []
-      response.forEach(doc => tempQuestions.push({...doc.data(), id:doc.id}))
-      console.log("t"+ tempQuestions)
-      setQuestions(tempQuestions);
-      console.log("q: "+questions)
+      var tempQuestions = []
+      response.docs.forEach(doc => {  tempQuestions.push({questions: doc.data().questions, subject: doc.data().subject, teacher: doc.data().teacher })})
 
+      console.log( tempQuestions.filter(question => { return localStorage.getItem("loggedSubject").includes(question.subject)}))
+      setExam(tempQuestions[0])
       setLoading(false)
-    })
-    //return () => displayQuestion();
+  })
   }, []);
 
 
-
   const displayQuestion = (questionNumber) => {
-      return <>
-        <li>{questions.questions.question}</li>
-        <label>
-          Answer:
-          <input type="text" name="answer" onChange={(event) => setAnswer(prevstate => 
-            ({ ...prevstate, answer: event.target.value }))} />
-        </label>
-        <li>Hint: {questions.questions.hint}</li>
-        <li>Time for response: {questions.questions.time}</li>
-      </> 
-  }
+    //questions.find((subj) => subj.subject === anotherItems)
+    if(questionNumber >= exam.questions.length)
+      {
+        window.alert("EXAM OVER")
+        return <></>}
+
+    return (
+      <>
+        <div>
+          <li>{exam.questions[questionNumber].question}</li>
+          <label>
+            Answer:
+            <input type="text" name="answer" onChange={(event) => setAnswer(prevstate => 
+              ({ ...prevstate, answer: event.target.value }))} />
+          </label>
+          <li>Hint: {exam.questions[questionNumber].hint}</li>
+          <li>Time for response: {exam.questions[questionNumber].time}</li>
+          </div>
+          <ReactInterval timeout={1000*exam.questions[questionNumber].time} enabled={true}
+              callback={() => handleSubmit()} />
+      </>
+  )}
+
   const webcamRef = React.useRef(null);
   const videoConstraints = {
       width: 200,
@@ -135,12 +145,12 @@ export default function Exam(props) {
   return (
     <ul>
       {
-        loading ?
+        !loading ?
           (
             <>
               {displayQuestion(questionNumber)}
               <br></br>
-              <ReactInterval timeout={1000} enabled={true}
+              <ReactInterval timeout={1000} enabled={false}
               callback={() => capture()} />
 
               <Webcam

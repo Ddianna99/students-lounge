@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 export default function StudentInterface(props) {
     const { firestore } = props;
 
-    const [exam, setExam] = useState([])
+    const [exams, setExams] = useState([])
     const [loading, setLoading] = useState(true)
     const [items, setItems] = useState([]);
     const [students, setStudents] = useState([]);
@@ -18,34 +18,28 @@ export default function StudentInterface(props) {
         if (items) {
             setItems(items);
         }
-        console.log("item: " + items)
-
-
         getDocs(collection(firestore, 'exams')).then(response => {
-            setExam(response.docs.map(doc => ({ students: doc.data().students, subject: doc.data().subject, teacher: doc.data().teacher })))
+            var tempExams = []
+            response.docs.forEach(doc => {  tempExams.push({students: doc.data().students, subject: doc.data().subject, teacher: doc.data().teacher })})
+            setExams(tempExams)
             setLoading(false)
         })
 
     }, []);
 
-    console.log("exam "+ exam)
-    console.log("vv" + exam.subject)
 
-    const handleClick = () => {
-        localStorage.setItem('loggedSubject', JSON.stringify(exam.subject))
-        console.log()
+    const handleClick = (val) => {
+        localStorage.setItem('loggedSubject', JSON.stringify(val))
         navigate('/start')
 
     }
 
     const displayExamCard = () => {
-        console.log(exam)
-        console.log("teeach " + exam.teacher)
-        console.log("subjjj " +exam.subject)
-        exam.find((user) => user.students === items)
+        console.log(exams);
+        exams.find((user) => user.students === items)
         return (
             <>
-            {Object.keys(exam).map((exam) => { return (
+            {exams.map((exam) => { return (
                 <div className="card one">
                 <div className="details">
                     <div className="content">
@@ -55,7 +49,7 @@ export default function StudentInterface(props) {
                         <div className='teacher'>
                             {exam.teacher}
                         </div>
-                        <button id='btn' onClick={handleClick} type="submit">Apply</button>
+                        <button id='btn' onClick={() => handleClick(exam.subject)} type="submit">Apply</button>
                     </div>
                 </div>
             </div>
