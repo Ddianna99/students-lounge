@@ -32,7 +32,9 @@ export default function Exam(props) {
   const[result, setResult] = useState({
     answer:[],
     student:'',
-    startDate: ''
+    startDate: '',
+    subject: '',
+    teacher: ''
   })
 
 
@@ -51,8 +53,7 @@ export default function Exam(props) {
     time: ''
   })
 
-  //const [idsArray, setidsArray] = useState([])
-  let idsArray = []
+  const [idsArray, setidsArray] = useState([])
 
   const handleSubmit = async () => {
     console.log(answer.emotions)
@@ -62,15 +63,14 @@ export default function Exam(props) {
     await addDoc(collection(firestore, 'answer'),answer)
     .then(docRef => {
       idsArray.push(docRef.id)
+      setidsArray(idsArray)
       //setidsArray(docRef.id)
       console.log(`idsArray = ${idsArray}`)
 
-      setResult(prevState => ({...prevState, student: `${localStorage.getItem("loggedEmail")}`}));
-      setResult(prevState => ({...prevState, teacher: `${exam.teacher}`}));
-      setResult(prevState => ({...prevState, subject: `${exam.subject}`}));
-      setResult(prevState => ({...prevState, answer:idsArray }));
+      setResult(prevState => ({...prevState, student: `${localStorage.getItem("loggedEmail")}`,teacher: `${exam.teacher}`,subject: `${exam.subject}`,answer:idsArray}));
+ 
 
-      if((questionNumber+1) === exam.questions.length){
+      if((questionNumber) === exam.questions.length-1){
         addDoc(collection(firestore, 'results'),result)
       }
       else{
@@ -113,7 +113,7 @@ export default function Exam(props) {
           </label>
           <li>Hint: {exam.questions[questionNumber].hint}</li>
           <li>Time for response: {exam.questions[questionNumber].time}</li>
-          </div>
+        </div>
           <ReactInterval timeout={1000*exam.questions[questionNumber].time} enabled={true}
               callback={() => handleSubmit()} />
       </>
