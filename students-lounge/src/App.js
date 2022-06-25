@@ -23,6 +23,7 @@ import AddStudents from './Pages/AddStudents';
 import Exam from './Pages/Exam';
 import StudentInterface from './Pages/StudentInterface';
 import TeacherInterface from './Pages/TeacherInterface';
+import Results from './Pages/Results';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -59,6 +60,7 @@ function App() {
             <Route path="/Exam" exact={true} element={<Exam firestore={firestore} time={time} />} />
             <Route path="/addExam" exact={true} element={<AddExam firestore={firestore} />} />
             <Route path="/addStudents" exact={true} element={<AddStudents firestore={firestore} />} />
+            <Route path="/results" exact={true} element={<Results firestore={firestore} />} />
           </Routes>
         </Router>
       </header>

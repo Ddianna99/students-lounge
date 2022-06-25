@@ -26,7 +26,7 @@ export default function TeacherInterface(props) {
     }, []);
 
     const handleClick = () => {
-        navigate('/addExam')
+        navigate('/results')
 
     }
 

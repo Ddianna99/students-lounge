@@ -51,8 +51,8 @@ export default function Exam(props) {
     time: ''
   })
 
-  const [idsArray, setidsArray] = useState([])
-  //let idsArray = []
+  //const [idsArray, setidsArray] = useState([])
+  let idsArray = []
 
   const handleSubmit = async () => {
     console.log(answer.emotions)
@@ -61,14 +61,14 @@ export default function Exam(props) {
     answer.time = exam.questions[questionNumber].time
     await addDoc(collection(firestore, 'answer'),answer)
     .then(docRef => {
-      //idsArray.push(docRef.id)
+      idsArray.push(docRef.id)
       //setidsArray(docRef.id)
       console.log(`idsArray = ${idsArray}`)
 
       setResult(prevState => ({...prevState, student: `${localStorage.getItem("loggedEmail")}`}));
       setResult(prevState => ({...prevState, teacher: `${exam.teacher}`}));
       setResult(prevState => ({...prevState, subject: `${exam.subject}`}));
-      setResult(prevState => ({...prevState, answer: tempQuestions}));
+      setResult(prevState => ({...prevState, answer:idsArray }));
 
       if((questionNumber+1) === exam.questions.length){
         addDoc(collection(firestore, 'results'),result)
