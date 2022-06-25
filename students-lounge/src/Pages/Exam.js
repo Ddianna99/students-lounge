@@ -30,9 +30,7 @@ export default function Exam(props) {
   const [loading, setLoading] = useState(true)
 
   const[result, setResult] = useState({
-    answer:'',
-    date:'',
-    question: '',
+    answer:[],
     student:'',
     startDate: ''
   })
@@ -53,21 +51,32 @@ export default function Exam(props) {
     time: ''
   })
 
+  const [idsArray, setidsArray] = useState([])
+  //let idsArray = []
+
   const handleSubmit = async () => {
     console.log(answer.emotions)
     //answer.question= exam[questionNumber].id
     answer.question = exam.questions[questionNumber].question
     answer.time = exam.questions[questionNumber].time
-    const result = await addDoc(collection(firestore, 'answer'),answer)
+    await addDoc(collection(firestore, 'answer'),answer)
     .then(docRef => {
-      addDoc(collection(firestore, 'result'),{
-        answer: docRef.id,
-        student : localStorage.getItem("loggedEmail"),
-        teacher : exam.teacher,
-        subject : exam.subject})
+      //idsArray.push(docRef.id)
+      //setidsArray(docRef.id)
+      console.log(`idsArray = ${idsArray}`)
 
-        setQuestionNumber(prevstate => prevstate + 1)
-        
+      setResult(prevState => ({...prevState, student: `${localStorage.getItem("loggedEmail")}`}));
+      setResult(prevState => ({...prevState, teacher: `${exam.teacher}`}));
+      setResult(prevState => ({...prevState, subject: `${exam.subject}`}));
+      setResult(prevState => ({...prevState, answer: tempQuestions}));
+
+      if((questionNumber+1) === exam.questions.length){
+        addDoc(collection(firestore, 'results'),result)
+      }
+      else{
+          setQuestionNumber(prevstate => prevstate + 1)  
+      }
+
     });
   }
 
@@ -126,13 +135,12 @@ export default function Exam(props) {
                   console.log(`response = ${res.data}`)
                   setName(res.data)
 
-                  if (res.data === "") {
-                    return
-                  }
-
                   const  key = res.data
-                  answer.emotions[key] = answer.emotions[key] + 1
-                  
+
+                  if(key != ""){
+                    answer.emotions[key] = answer.emotions[key] + 1
+                    console.log(` answer.emotions = ${answer.emotions[key]}`)
+                  }
               })
               .catch(error => {
                   console.log(`error = ${error}`)
@@ -150,7 +158,7 @@ export default function Exam(props) {
             <>
               {displayQuestion(questionNumber)}
               <br></br>
-              <ReactInterval timeout={1000} enabled={false}
+              <ReactInterval timeout={1000} enabled={true}
               callback={() => capture()} />
 
               <Webcam
