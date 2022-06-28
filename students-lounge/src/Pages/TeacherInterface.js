@@ -25,9 +25,9 @@ export default function TeacherInterface(props) {
 
     }, []);
 
-    const handleClick = () => {
+    const handleClick = (r) => {
+        localStorage.setItem('loggedSubject', JSON.stringify(r));
         navigate('/results')
-
     }
 
     const handleClickAddExam = () => {
@@ -43,17 +43,34 @@ export default function TeacherInterface(props) {
         console.log(exam.teacher)
         console.log(exam.subject)
         exam.find((user) => user.teacher === items)
+        // return (
+        //     <div className="card one">
+        //         <div className="details">
+        //             <div className="content">
+        //                 <div className='subject'>
+        //                     {Object.keys(exam).map((keys) => { return <h2>{exam[keys].subject}</h2> })}
+        //                 </div>
+        //                 <button id='btn' onClick={handleClick} type="submit">See result</button>
+        //             </div>
+        //         </div>
+        //     </div>
+        // )
         return (
-            <div className="card one">
+            <>
+            {exam.map((exam) => { return (
+                <div className="card one">
                 <div className="details">
                     <div className="content">
                         <div className='subject'>
-                            {Object.keys(exam).map((keys) => { return <h2>{exam[keys].subject}</h2> })}
+                            {exam.subject}
                         </div>
-                        <button id='btn' onClick={handleClick} type="submit">See result</button>
+                        <button id='btn' onClick={() => handleClick(exam.subject)} type="submit">See result</button>
                     </div>
                 </div>
             </div>
+            ) })}
+            
+            </>
         )
     }
 
@@ -67,8 +84,8 @@ export default function TeacherInterface(props) {
                     </div>
                     <br></br>
                     <br></br>
-                    <button onClick={handleClickAddExam} type="submit">Add new exam</button>
-                    <button onClick={handleClickAddStudents} type="submit">Add students</button>
+                    <button onClick={() => handleClickAddExam()} type="submit">Add new exam</button>
+                    <button onClick={() => handleClickAddStudents()} type="submit">Add students</button>
                 </div>
             ) :
             <></>

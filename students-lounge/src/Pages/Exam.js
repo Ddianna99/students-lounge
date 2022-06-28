@@ -5,6 +5,7 @@ import { arrayUnion, updateDoc } from '@firebase/firestore';
 import axios from 'axios';
 import Webcam from 'react-webcam';
 import ReactInterval from 'react-interval';
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -12,6 +13,7 @@ export default function Exam(props) {
   const { firestore, time } = props;
 
   const [anotherItems, setAnotherItems] = useState([])
+  const navigate = useNavigate();
 
   // const [questions, setQuestions] = useState({
   //   questions:[{
@@ -23,7 +25,7 @@ export default function Exam(props) {
 
 
 
-  const[exam, setExam] = useState()
+  const[exam, setExam] = useState([])
 
   const [questionNumber, setQuestionNumber] = useState(0)
   const [resultId, setResultId] = useState()
@@ -64,14 +66,14 @@ export default function Exam(props) {
     .then(docRef => {
       idsArray.push(docRef.id)
       setidsArray(idsArray)
-      //setidsArray(docRef.id)
-      console.log(`idsArray = ${idsArray}`)
+      //console.log(`idsArray = ${idsArray}`)
 
       setResult(prevState => ({...prevState, student: `${localStorage.getItem("loggedEmail")}`,teacher: `${exam.teacher}`,subject: `${exam.subject}`,answer:idsArray}));
  
 
       if((questionNumber) === exam.questions.length-1){
         addDoc(collection(firestore, 'results'),result)
+        navigate('/student')
       }
       else{
           setQuestionNumber(prevstate => prevstate + 1)  
@@ -86,12 +88,23 @@ export default function Exam(props) {
 
     getDocs(collection(firestore, 'tests')).then(response => {
       var tempQuestions = []
-      response.docs.forEach(doc => {  tempQuestions.push({questions: doc.data().questions, subject: doc.data().subject, teacher: doc.data().teacher })})
 
-      console.log( tempQuestions.filter(question => { return localStorage.getItem("loggedSubject").includes(question.subject)}))
-      setExam(tempQuestions[0])
-      setLoading(false)
-  })
+      response.docs.forEach(doc => {
+          tempQuestions.push({questions: doc.data().questions,
+                              subject: doc.data().subject,
+                              teacher: doc.data().teacher,
+            })
+          }
+        )
+
+        for (var i=0; i < tempQuestions.length; i++) {
+          if(tempQuestions[i].subject === localStorage.getItem("loggedSubject").replace(/['"]+/g, '')){
+            setExam(tempQuestions[i])
+            setLoading(false)
+          }
+        } 
+        
+      })
   }, []);
 
 
@@ -129,7 +142,6 @@ export default function Exam(props) {
   const capture = React.useCallback(
       () => {
           const imageSrc = webcamRef.current.getScreenshot();
-          //for deployment, you should put your backend url / api
           axios.post('http://127.0.0.1:5000/exam', { data: imageSrc })
               .then(res => {
                   console.log(`response = ${res.data}`)

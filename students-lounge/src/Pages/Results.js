@@ -8,7 +8,7 @@ export default function Results(props) {
     const[result, setResults] = useState([])
     const[number, setNumber] = useState([0])
     const [loading, setLoading] = useState(true)
-    const[answers, setAnswers] = useState([])
+    const[answers, setAnswers] = useState()
 
     useEffect(() => {
         getDocs(collection(firestore, 'results')).then(response => {
@@ -18,11 +18,11 @@ export default function Results(props) {
             Object.entries(resultsData).map(item => {
                 ans.push(item[1].answer);
             })
+            ans = ans.flat()
             setResults(resultsData)
             getDocs(collection(firestore, 'answer')).then(res => {
-                let a = res.docs.filter(item => !ans.includes(item.docRef))
+                let a = res.docs.filter(item => ans.includes(item.id))
                 a = a.map(r => ({answer:r.data(),id: r.id}))
-
                 setAnswers(a)
                 setLoading(false)
             })
@@ -32,7 +32,8 @@ export default function Results(props) {
 
       const displayAnswer = (a) =>
       {
-        const l = answers.filter(ans => ans.id == a)[0]
+        const l = answers.filter(ans => ans.id == a[0])[0]
+ 
         return <>
             <li>{l?.answer.answer}</li>
             <li>{l?.answer.question}</li>
@@ -50,7 +51,7 @@ export default function Results(props) {
 
       const displayResult = (r) => {
           return <div>
-            <li>{r.student}</li>
+            <li>{r.student.replace(/['"]+/g, '')}</li>
             <li>{r.startDate}</li>
             {displayAnswer(r.answer)}
           </div>
@@ -63,8 +64,9 @@ export default function Results(props) {
         <>
             <div className='results'>
                 <h1>Results</h1>
-                <h2>{localStorage.getItem("loggedSubject")}</h2>
                 <br></br>
+                <br></br>
+                <h2>{localStorage.getItem("loggedSubject").replace(/['"]+/g, '')}</h2>
                 {result.map(r =>{ return displayResult(r)})}
                 <br></br>
             </div> 
